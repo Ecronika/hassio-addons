@@ -54,7 +54,7 @@ CONFIG_XML="$CONFIG_XML
 fi
 if [ "$INTERFACE_TYPE" = "usb" ]; then
 CONFIG_XML="$CONFIG_XML
-		<knxSubnet type=\"usb\" medium=\"tp1\">$USB_DEVICE</knxSubnet>"
+		<knxSubnet type=\"usb\" medium=\"rf\" domainAddress=\"00FA5D40C82A\">$USB_DEVICE</knxSubnet>"
 fi
 CONFIG_XML="$CONFIG_XML
 		<!-- KNX group address filter applied by the server for this service container (optional) -->
