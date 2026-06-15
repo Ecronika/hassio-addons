@@ -1,0 +1,40 @@
+{
+  "name": "Calimero KNXnet/IP Server (RF)",
+  "version": "0.17-rf",
+  "slug": "calimero_server_rf",
+  "description": "A KNXnet/IP server for running your own KNXnet/IP server in software accessing the KNX bus by FT1.2, TPUART or USB bus adapters (incl. KNX RF)",
+  "arch": ["aarch64"],
+  "url": "https://github.com/aschamberger/hassio-addons/",
+  "init": false,
+  "startup": "services",
+  "boot": "auto",
+  "host_network": true,
+  "uart": true,
+  "usb": true,
+  "options": {
+    "knx_address": "1.1.0",
+    "client_address_start": "1.1.101",
+    "client_address_count": 5,
+    "interface_type": "ft12-cemi",
+	"serial_device": "/dev/ttyAMA0",
+	"routing": true,
+    "knx_source_override": true
+  },
+  "schema": {
+    "knx_address": "str",
+    "client_address_start": "str",
+    "client_address_count": "int",
+    "interface_type": "list(ft12-cemi|tpuart|usb)",
+	"serial_device": "device(subsystem=tty)?",
+	"usb_device": "str?",
+	"usb_medium": "list(tp1|rf|pl110)?",
+	"rf_domain_address": "str?",
+	"routing": "bool",
+    "knx_source_override": "bool?",
+    "loglevel": "list(trace|debug|info|warn|error|off)?",
+    "expose_date": "str?",
+    "expose_time": "str?",
+    "expose_datetime": "str?",
+    "timeserver_expiration": "int?"
+  }
+}
