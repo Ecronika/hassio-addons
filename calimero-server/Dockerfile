@@ -48,7 +48,7 @@ RUN cd /opt/calimero/ \
     && mkdir -p /opt/calimero/org/usb4java/linux-aarch64/ \
     && cd build \
     && export JAVA_HOME=/usr/lib/jvm/java-17-openjdk/ \
-    && cmake .. \
+    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. \
     && make install/strip \
     && cp /usr/local/lib/libusb4java.so /opt/calimero/org/usb4java/linux-aarch64/ \
     && cd ../../ \
