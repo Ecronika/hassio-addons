@@ -1,4 +1,4 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/home-assistant/aarch64-base:latest
 FROM $BUILD_FROM as build
 
 ENV LANG C.UTF-8
@@ -61,7 +61,7 @@ RUN cd /opt/calimero/ \
     && wget https://repo1.maven.org/maven2/com/github/calimero/calimero-device/2.5.1/calimero-device-2.5.1.jar \
     && wget https://repo1.maven.org/maven2/com/github/calimero/calimero-server/2.5.1/calimero-server-2.5.1.jar
     
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/home-assistant/aarch64-base:latest
 FROM $BUILD_FROM
 
 ENV LANG C.UTF-8
