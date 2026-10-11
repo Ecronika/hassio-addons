@@ -69,13 +69,15 @@ fi
 
 # Domain-Adresse nur fuer offene Medien (RF: 6 Byte, PL110: 2 Byte)
 ADD_DOMAIN_ADDRESS=""
-RF_DOMAIN_ADDRESS=$(config_value 'rf_domain_address')
+RF_DOMAIN_ADDRESS_RAW=$(config_value 'rf_domain_address')
+# Trennzeichen entfernen, damit die ETS-Schreibweise (z. B. 00FA:5D40C82A) direkt uebernommen werden kann
+RF_DOMAIN_ADDRESS=${RF_DOMAIN_ADDRESS_RAW//[:. -]/}
 if [ "$INTERFACE_TYPE" = "usb" ]; then
     case "$USB_MEDIUM" in
         rf)
             if [ -n "$RF_DOMAIN_ADDRESS" ]; then
                 [[ "$RF_DOMAIN_ADDRESS" =~ ^[0-9A-Fa-f]{12}$ ]] \
-                    || bashio::exit.nok "rf_domain_address '${RF_DOMAIN_ADDRESS}' ungueltig: Fuer KNX RF sind 12 Hex-Zeichen (6 Byte) erforderlich, z. B. 000000004b01."
+                    || bashio::exit.nok "rf_domain_address '${RF_DOMAIN_ADDRESS_RAW}' ungueltig: Fuer KNX RF sind 12 Hex-Zeichen (6 Byte) erforderlich, z. B. 000000004b01."
             else
                 bashio::log.warning "Keine RF-Domain-Adresse gesetzt – Calimero verwendet die Broadcast-Domain. Domain-Adresse der RF-Linie aus der ETS eintragen."
             fi
@@ -83,7 +85,7 @@ if [ "$INTERFACE_TYPE" = "usb" ]; then
         pl110)
             if [ -n "$RF_DOMAIN_ADDRESS" ]; then
                 [[ "$RF_DOMAIN_ADDRESS" =~ ^[0-9A-Fa-f]{4}$ ]] \
-                    || bashio::exit.nok "rf_domain_address '${RF_DOMAIN_ADDRESS}' ungueltig: Fuer KNX PL110 sind 4 Hex-Zeichen (2 Byte) erforderlich."
+                    || bashio::exit.nok "rf_domain_address '${RF_DOMAIN_ADDRESS_RAW}' ungueltig: Fuer KNX PL110 sind 4 Hex-Zeichen (2 Byte) erforderlich."
             fi
             ;;
         *)

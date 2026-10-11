@@ -13,6 +13,7 @@
 - `serial_device` is optional; `/dev/ttyAMA0`, `/dev/ttyS1` and `/dev/ttyAML1` are detected automatically for `ft12-cemi`/`tpuart`.
 - Validation of `knx_address`, `client_address_start`, `client_address_count` and `rf_domain_address` (RF: 12, PL110: 4 hex characters); clear error messages in the log.
 - `rf_domain_address` is only used for `rf` and `pl110`.
+- `rf_domain_address` accepts the ETS notation with separators (e.g. `00FA:5D40C82A`).
 - Option values are XML-escaped.
 - Repository URL points to this fork.
 

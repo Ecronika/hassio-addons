@@ -44,7 +44,7 @@ routing: false
 
 `usb_medium` (optional) KNX medium of the USB interface: `tp1` (default), `rf` or `pl110`
 
-`rf_domain_address` (optional) domain address for `rf` (12 hex characters, 6 bytes, e.g. `000000004b01` - see the properties of the RF line in ETS) or `pl110` (4 hex characters, 2 bytes). Ignored for `tp1`.
+`rf_domain_address` (optional) domain address for `rf` (12 hex characters, 6 bytes, e.g. `000000004b01`; the ETS notation `00FA:5D40C82A` from the properties of the RF line can be pasted as is) or `pl110` (4 hex characters, 2 bytes). Ignored for `tp1`.
 
 `routing` if true activate KNX IP routing, if false routing is disabled
 
