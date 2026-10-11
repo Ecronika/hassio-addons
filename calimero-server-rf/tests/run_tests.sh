@@ -41,9 +41,14 @@ for options in "$HERE"/cases/*.json; do
         export PATH="$WORK/bin:$PATH" CALIMERO_DRY_RUN=1 CALIMERO_CONFIG_FILE="$out"
         export OPTIONS_FILE="$options" BASHIO_LIB RUN_SH
         unset MOCK_IP_ROUTE CALIMERO_SERIAL_CANDIDATES TOUCH
+        # USB-Probe-Mock (Default: kein USB-Zugriff im Test). Format: key=value-Zeilen mit \n
+        CALIMERO_PROBE_OUTPUT='status=error\nerror=kein USB im Test'
         if [ -f "$HERE/cases/$name.env" ]; then
             # shellcheck disable=SC1090
             source <(sed "s#@TMP@#$tmp#g" "$HERE/cases/$name.env")
+        fi
+        export CALIMERO_PROBE_OUTPUT
+        if [ -f "$HERE/cases/$name.env" ]; then
             export CALIMERO_SERIAL_CANDIDATES
             [ -n "${MOCK_IP_ROUTE+x}" ] && export MOCK_IP_ROUTE
             [ -n "${TOUCH:-}" ] && touch "$TOUCH"

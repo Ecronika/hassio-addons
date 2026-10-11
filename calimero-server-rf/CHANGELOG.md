@@ -8,6 +8,10 @@
 - Empty `usb_device` now selects the first KNX USB device instead of searching for a device named "null".
 - Serial fallback assigned `/dev/ttyS1` incorrectly (`==`).
 
+### Added
+- Automatic detection of the KNX USB interface (`KnxUsbProbe`, cEMI local device management): medium (PID 51) and domain address (PID 82 RF / PID 70 PL110) are read from the interface when `usb_medium` / `rf_domain_address` are empty. Configured values take precedence; mismatches are logged as warnings.
+- `interface_type: auto` (new default for new installations): uses a KNX USB interface if one is connected, otherwise `ft12-cemi`. Existing configurations keep their value.
+
 ### Changed
 - Network interface for KNXnet/IP is detected from the default route instead of the fixed `end0`.
 - `serial_device` is optional; `/dev/ttyAMA0`, `/dev/ttyS1` and `/dev/ttyAML1` are detected automatically for `ft12-cemi`/`tpuart`.
@@ -17,5 +21,5 @@
 - Option values are XML-escaped.
 - Repository URL points to this fork.
 
-### Added
+### Tests
 - `tests/run_tests.sh`: regression tests for the generated Calimero configuration (all interface types and media).

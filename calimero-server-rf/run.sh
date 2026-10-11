@@ -43,11 +43,8 @@ SERIAL_DEVICE=$(config_value 'serial_device')
 USB_DEVICE=$(config_value 'usb_device')
 ROUTING=$(bashio::config 'routing')
 
-# KNX-Medium fuer USB: tp1 (Default) | rf | pl110
+# KNX-Medium fuer USB: tp1 | rf | pl110 – leer = automatisch vom Interface lesen
 USB_MEDIUM=$(config_value 'usb_medium')
-if [ -z "$USB_MEDIUM" ]; then
-    USB_MEDIUM="tp1"
-fi
 
 # --- Plausibilitaetspruefungen -----------------------------------------------
 
@@ -67,11 +64,87 @@ if bashio::var.true "$ROUTING" && [[ ! "$KNX_ADDRESS" =~ \.0$ ]]; then
     bashio::log.warning "Routing ist aktiv, knx_address ${KNX_ADDRESS} ist aber keine Koppler-/Backbone-Adresse (x.y.0 bzw. x.0.0)."
 fi
 
-# Domain-Adresse nur fuer offene Medien (RF: 6 Byte, PL110: 2 Byte)
-ADD_DOMAIN_ADDRESS=""
 RF_DOMAIN_ADDRESS_RAW=$(config_value 'rf_domain_address')
 # Trennzeichen entfernen, damit die ETS-Schreibweise (z. B. 00FA:5D40C82A) direkt uebernommen werden kann
 RF_DOMAIN_ADDRESS=${RF_DOMAIN_ADDRESS_RAW//[:. -]/}
+
+# --- KNX-USB-Interface automatisch erkennen ----------------------------------
+# KnxUsbProbe liest per cEMI Local Device Management Medium, Domain-Adresse und
+# Seriennummer aus dem Interface. Konfigurierte Optionen haben immer Vorrang.
+
+run_usb_probe() {
+    if [ -n "${CALIMERO_PROBE_OUTPUT+x}" ]; then   # Testumgebung
+        printf '%b\n' "$CALIMERO_PROBE_OUTPUT"
+        return
+    fi
+    timeout 30 /opt/jdk/bin/java -cp "/opt/calimero/*:/opt/calimero/probe" KnxUsbProbe "$1" 2>/dev/null || true
+}
+
+probe_value() {
+    printf '%s\n' "$PROBE_RESULT" | sed -n "s/^$1=//p" | head -n 1
+}
+
+PROBE_RESULT=""
+PROBE_STATUS=""
+if [ "$INTERFACE_TYPE" = "usb" ] || [ "$INTERFACE_TYPE" = "auto" ]; then
+    PROBE_RESULT=$(run_usb_probe "$USB_DEVICE")
+    PROBE_STATUS=$(probe_value status)
+    case "$PROBE_STATUS" in
+        ok)
+            PROBE_SUMMARY="$(probe_value device)"
+            for key in serial medium medium_mask domain; do
+                if [ -n "$(probe_value "$key")" ]; then
+                    PROBE_SUMMARY="${PROBE_SUMMARY}, ${key} $(probe_value "$key")"
+                fi
+            done
+            bashio::log.info "KNX-USB-Interface erkannt: ${PROBE_SUMMARY}"
+            ;;
+        no_device)
+            bashio::log.info "Kein KNX-USB-Interface gefunden."
+            ;;
+        *)
+            bashio::log.warning "KNX-USB-Interface konnte nicht abgefragt werden: $(probe_value error)"
+            ;;
+    esac
+fi
+
+if [ "$INTERFACE_TYPE" = "auto" ]; then
+    if [ "$PROBE_STATUS" = "ok" ] || [ "$(probe_value knx_usb_devices)" -gt 0 ] 2>/dev/null; then
+        INTERFACE_TYPE="usb"
+        bashio::log.info "Zugangsweg automatisch erkannt: usb"
+    else
+        INTERFACE_TYPE="ft12-cemi"
+        bashio::log.warning "Kein KNX-USB-Interface – verwende ft12-cemi (serielle Schnittstelle). Fuer TPUART interface_type: tpuart setzen."
+    fi
+fi
+
+if [ "$INTERFACE_TYPE" = "usb" ]; then
+    DETECTED_MEDIUM=$(probe_value medium)
+    DETECTED_DOMAIN=$(probe_value domain)
+    if [ -z "$USB_MEDIUM" ]; then
+        if [ -n "$DETECTED_MEDIUM" ]; then
+            USB_MEDIUM="$DETECTED_MEDIUM"
+            bashio::log.info "Medium automatisch erkannt: ${USB_MEDIUM}"
+        else
+            USB_MEDIUM="tp1"
+            bashio::log.warning "Medium nicht ermittelbar – verwende tp1. Bei RF/PL110 usb_medium setzen."
+        fi
+    elif [ -n "$DETECTED_MEDIUM" ] && [ "$DETECTED_MEDIUM" != "$USB_MEDIUM" ]; then
+        bashio::log.warning "usb_medium ist ${USB_MEDIUM}, das Interface meldet aber ${DETECTED_MEDIUM}."
+    fi
+    if [ "$USB_MEDIUM" = "$DETECTED_MEDIUM" ] && [ -n "$DETECTED_DOMAIN" ]; then
+        if [ -z "$RF_DOMAIN_ADDRESS" ]; then
+            RF_DOMAIN_ADDRESS="$DETECTED_DOMAIN"
+            RF_DOMAIN_ADDRESS_RAW="$DETECTED_DOMAIN"
+            bashio::log.info "Domain-Adresse automatisch erkannt: ${RF_DOMAIN_ADDRESS}"
+        elif [ "${RF_DOMAIN_ADDRESS^^}" != "${DETECTED_DOMAIN^^}" ]; then
+            bashio::log.warning "rf_domain_address ${RF_DOMAIN_ADDRESS} weicht von der im Interface gespeicherten Domain ${DETECTED_DOMAIN} ab – verwende den konfigurierten Wert."
+        fi
+    fi
+fi
+
+# Domain-Adresse nur fuer offene Medien (RF: 6 Byte, PL110: 2 Byte)
+ADD_DOMAIN_ADDRESS=""
 if [ "$INTERFACE_TYPE" = "usb" ]; then
     case "$USB_MEDIUM" in
         rf)
