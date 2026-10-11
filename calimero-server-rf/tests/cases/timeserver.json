@@ -1,0 +1,1 @@
+{"knx_address":"1.1.0","client_address_start":"1.1.101","client_address_count":2,"interface_type":"ft12-cemi","serial_device":"/dev/ttyAMA0","routing":true,"knx_source_override":true,"expose_date":"0/0/1","expose_time":"0/0/2","expose_datetime":"0/0/3","timeserver_expiration":3600}
