@@ -16,7 +16,7 @@
     "client_address_start": "1.1.101",
     "client_address_count": 5,
     "interface_type": "auto",
-	"routing": true,
+	"routing": false,
     "knx_source_override": true
   },
   "schema": {

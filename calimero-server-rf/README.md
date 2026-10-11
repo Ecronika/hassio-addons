@@ -12,7 +12,7 @@ knx_address: 1.1.0
 client_address_start: 1.1.101
 client_address_count: 5
 interface_type: auto
-routing: true
+routing: false
 knx_source_override: true
 ```
 
@@ -30,7 +30,7 @@ The detected values are shown in the add-on log, e.g. `KNX-USB-Interface erkannt
 
 `client_address_start` Start address of KNX individual addresses, which are assigned to KNXnet/IP tunneling connections.
 
-`client_address_count` number of KNX individual addresses/possible tunneling connections. The resulting range must not exceed x.y.255.
+`client_address_count` number of KNX individual addresses/possible tunneling connections. The addresses must be in the same area/line as `knx_address`, must not include `knx_address` and must not exceed x.y.255.
 
 `interface_type` can be one of:
 * `auto` (default) – use a KNX USB interface if one is connected, otherwise `ft12-cemi`
@@ -42,11 +42,11 @@ The detected values are shown in the add-on log, e.g. `KNX-USB-Interface erkannt
 
 `usb_device` specify the vendorId:productId or vendor name, e.g. siemens; if USB device identifier is left empty, the first found KNX USB device is used
 
-`usb_medium` (optional) KNX medium of the USB interface: `tp1`, `rf` or `pl110`. If empty, the medium is read from the USB interface (fallback `tp1`).
+`usb_medium` (optional) KNX medium of the USB interface: `tp1`, `rf` or `pl110`. If empty, the medium is read from the USB interface (fallback `tp1` if the interface cannot be queried). If the interface reports more than one medium, `usb_medium` must be set.
 
 `rf_domain_address` (optional) domain address for `rf` (12 hex characters, 6 bytes, e.g. `000000004b01`; the ETS notation `00FA:5D40C82A` from the properties of the RF line can be pasted as is) or `pl110` (4 hex characters, 2 bytes). Ignored for `tp1`. If empty, the domain address stored in the USB interface is used. A configured value always takes precedence; a different value in the interface is reported as a warning.
 
-`routing` if true activate KNX IP routing, if false routing is disabled
+`routing` if true activate KNX IP routing (multicast), if false routing is disabled (default). For Home Assistant, tunneling (`routing: false`) is the recommended connection type.
 
 `knx_source_override` if true activate static default source address assignment (required for devices that don't like the source address to be changed or set, e.g. for the Weinzierl kBerry). Only applied to `ft12-cemi`; ignored for `tpuart` and `usb`.
 

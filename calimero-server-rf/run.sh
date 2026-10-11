@@ -19,12 +19,14 @@ config_value() {
 }
 
 # Maskiert Sonderzeichen fuer XML-Attribute und -Texte.
+# Ersetzungen gequotet: Ab Bash 5.2 (patsub_replacement) stuende ein ungequotetes &
+# im Ersatztext fuer den gefundenen Treffer; Quoting verhindert das in allen Versionen.
 xml_escape() {
     local s=$1
-    s=${s//&/&amp;}
-    s=${s//</&lt;}
-    s=${s//>/&gt;}
-    s=${s//\"/&quot;}
+    s=${s//&/'&amp;'}
+    s=${s//</'&lt;'}
+    s=${s//>/'&gt;'}
+    s=${s//\"/'&quot;'}
     printf '%s' "$s"
 }
 
@@ -59,6 +61,17 @@ START_OCTET=$(echo "$CLIENT_ADDRESS_START" | cut -d'.' -f 3)
 LAST_OCTET=$((START_OCTET + CLIENT_ADDRESS_COUNT - 1))
 if [ "$CLIENT_ADDRESS_COUNT" -gt 0 ] && [ "$LAST_OCTET" -gt 255 ]; then
     bashio::exit.nok "client_address_start ${CLIENT_ADDRESS_START} + client_address_count ${CLIENT_ADDRESS_COUNT} ueberschreitet ${KNX_ADDRESS_PREFIX}.255."
+fi
+# Calimero verwendet Tunneladressen nur, wenn sie in Bereich und Linie des Servers liegen
+SERVER_PREFIX=$(echo "$KNX_ADDRESS" | cut -d'.' -f 1-2)
+SERVER_OCTET=$(echo "$KNX_ADDRESS" | cut -d'.' -f 3)
+if [ "$CLIENT_ADDRESS_COUNT" -gt 0 ]; then
+    if [ "$KNX_ADDRESS_PREFIX" != "$SERVER_PREFIX" ]; then
+        bashio::exit.nok "client_address_start ${CLIENT_ADDRESS_START} liegt nicht in Bereich/Linie von knx_address ${KNX_ADDRESS} (${SERVER_PREFIX}.x) – Calimero wuerde die Tunneladressen nicht verwenden."
+    fi
+    if [ "$SERVER_OCTET" -ge "$START_OCTET" ] && [ "$SERVER_OCTET" -le "$LAST_OCTET" ]; then
+        bashio::exit.nok "knx_address ${KNX_ADDRESS} liegt im Tunneladressbereich ${CLIENT_ADDRESS_START} bis ${KNX_ADDRESS_PREFIX}.${LAST_OCTET}."
+    fi
 fi
 if bashio::var.true "$ROUTING" && [[ ! "$KNX_ADDRESS" =~ \.0$ ]]; then
     bashio::log.warning "Routing ist aktiv, knx_address ${KNX_ADDRESS} ist aber keine Koppler-/Backbone-Adresse (x.y.0 bzw. x.0.0)."
@@ -125,6 +138,9 @@ if [ "$INTERFACE_TYPE" = "usb" ]; then
         if [ -n "$DETECTED_MEDIUM" ]; then
             USB_MEDIUM="$DETECTED_MEDIUM"
             bashio::log.info "Medium automatisch erkannt: ${USB_MEDIUM}"
+        elif [ "$PROBE_STATUS" = "ok" ] && [ -n "$(probe_value medium_mask)" ]; then
+            # Interface meldet mehrere (oder keine bekannten) Medien – nicht raten
+            bashio::exit.nok "Das KNX-USB-Interface meldet kein eindeutiges Medium ($(probe_value medium_mask)). Option usb_medium (tp1, rf oder pl110) setzen."
         else
             USB_MEDIUM="tp1"
             bashio::log.warning "Medium nicht ermittelbar – verwende tp1. Bei RF/PL110 usb_medium setzen."

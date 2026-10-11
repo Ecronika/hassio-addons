@@ -7,18 +7,19 @@
 	<serviceContainer activate="true" routing="false" networkMonitoring="true"
 		udpPort="3671" listenNetIf="end0">
 		<knxAddress type="individual">1.1.0</knxAddress>
-		<knxSubnet type="usb" medium="tp1"></knxSubnet>
+		<knxSubnet type="usb" medium="tp1">a&lt;b&gt;&amp;&quot;c</knxSubnet>
 		<!-- KNX group address filter applied by the server for this service container (optional) -->
 		<groupAddressFilter>
 		</groupAddressFilter>
 		<!-- Additional KNX individual addresses assigned to client KNXnet/IP connections (optional) -->
 		<additionalAddresses>
 			<knxAddress type="individual">1.1.101</knxAddress>
-			<knxAddress type="individual">1.1.102</knxAddress>
-			<knxAddress type="individual">1.1.103</knxAddress>
-			<knxAddress type="individual">1.1.104</knxAddress>
-			<knxAddress type="individual">1.1.105</knxAddress>
 		</additionalAddresses>
+		<timeServer>
+			<datapoint stateBased="true" name="current time" dptID="10.001" priority="low">
+				<knxAddress type="group">1/2/3&amp;&lt;&gt;&quot;</knxAddress>
+			</datapoint>
+		</timeServer>
 	</serviceContainer>
 	<!-- Add next service container (optional) -->
 </knxServer>
