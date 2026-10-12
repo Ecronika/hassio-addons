@@ -1,0 +1,1 @@
+Keine serielle Schnittstelle gefunden (geprueft: /dev/ttyAMA0, /dev/ttyS1, /dev/ttyAML1). Option serial_device setzen.

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Calimero server settings (required for startup) -->
+<knxServer name="knx-server" friendlyName="Hass OS KNXnet/IP Server">
+	<!-- KNXnet/IP search & discovery -->
+	<discovery listenNetIf="all" outgoingNetIf="all" activate="true" />
+	<!-- Provides the KNXnet/IP-side configuration for access to one KNX subnet -->
+	<serviceContainer activate="true" routing="false" networkMonitoring="true"
+		udpPort="3671" listenNetIf="end0">
+		<knxAddress type="individual">1.1.0</knxAddress>
+		<knxSubnet type="usb" medium="tp1">a&lt;b&gt;&amp;&quot;c</knxSubnet>
+		<!-- KNX group address filter applied by the server for this service container (optional) -->
+		<groupAddressFilter>
+		</groupAddressFilter>
+		<!-- Additional KNX individual addresses assigned to client KNXnet/IP connections (optional) -->
+		<additionalAddresses>
+			<knxAddress type="individual">1.1.101</knxAddress>
+		</additionalAddresses>
+		<timeServer>
+			<datapoint stateBased="true" name="current time" dptID="10.001" priority="low">
+				<knxAddress type="group">1/2/3&amp;&lt;&gt;&quot;</knxAddress>
+			</datapoint>
+		</timeServer>
+	</serviceContainer>
+	<!-- Add next service container (optional) -->
+</knxServer>

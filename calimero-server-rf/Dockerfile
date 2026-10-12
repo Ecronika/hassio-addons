@@ -60,6 +60,10 @@ RUN cd /opt/calimero/ \
     && wget https://repo1.maven.org/maven2/com/github/calimero/calimero-core/2.5.1/calimero-core-2.5.1.jar \
     && wget https://repo1.maven.org/maven2/com/github/calimero/calimero-device/2.5.1/calimero-device-2.5.1.jar \
     && wget https://repo1.maven.org/maven2/com/github/calimero/calimero-server/2.5.1/calimero-server-2.5.1.jar
+
+# KnxUsbProbe: liest Medium/Domain-Adresse aus dem KNX-USB-Interface (automatische Erkennung in run.sh)
+COPY probe/KnxUsbProbe.java /tmp/probe/
+RUN /usr/lib/jvm/java-17-openjdk/bin/javac --release 17 -cp "/opt/calimero/*" -d /opt/calimero/probe /tmp/probe/KnxUsbProbe.java
     
 ARG BUILD_FROM=ghcr.io/home-assistant/aarch64-base:latest
 FROM $BUILD_FROM

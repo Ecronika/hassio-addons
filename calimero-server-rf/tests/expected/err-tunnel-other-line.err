@@ -1,0 +1,1 @@
+client_address_start 1.2.101 liegt nicht in Bereich/Linie von knx_address 1.1.0 (1.1.x) – Calimero wuerde die Tunneladressen nicht verwenden.
