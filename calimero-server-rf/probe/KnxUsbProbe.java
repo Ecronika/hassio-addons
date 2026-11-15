@@ -1,5 +1,5 @@
 /*
- * KnxUsbProbe – liest per cEMI Local Device Management aus einem KNX-USB-Interface,
+ * KnxUsbProbe (Calimero 2.6) – liest per cEMI Local Device Management aus einem KNX-USB-Interface,
  * was das Add-on automatisch erkennen soll: Medium, Domain-Adresse und Seriennummer.
  *
  * Aufruf:  java -cp "/opt/calimero/*:/opt/calimero/probe" KnxUsbProbe [usb_device]
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 import tuwien.auto.calimero.KNXException;
 import tuwien.auto.calimero.mgmt.LocalDeviceManagementUsb;
-import tuwien.auto.calimero.serial.usb.UsbConnection;
+import tuwien.auto.calimero.serial.usb.UsbConnectionFactory;
 
 public final class KnxUsbProbe {
 	private static final int DeviceObject = 0;
@@ -32,13 +32,13 @@ public final class KnxUsbProbe {
 	public static void main(final String[] args) {
 		final String device = args.length > 0 ? args[0].trim() : "";
 		try {
-			final int found = UsbConnection.getKnxDevices().size();
+			final int found = UsbConnectionFactory.attachedKnxUsbDevices().size();
 			out("knx_usb_devices", Integer.toString(found));
 			if (found == 0 && device.isEmpty()) {
 				out("status", "no_device");
 				return;
 			}
-			try (var c = new UsbConnection(device); var ldm = new LocalDeviceManagementUsb(c, e -> {}, false)) {
+			try (var c = UsbConnectionFactory.open(device); var ldm = new LocalDeviceManagementUsb(c, e -> {}, false)) {
 				out("device", c.name());
 				read(ldm, DeviceObject, PidSerialNumber).ifPresent(v -> out("serial", hex(v)));
 

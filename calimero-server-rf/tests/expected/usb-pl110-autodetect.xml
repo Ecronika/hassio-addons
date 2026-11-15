@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Calimero server settings (required for startup) -->
-<knxServer name="knx-server" friendlyName="Hass OS KNXnet/IP Server">
+<knxServer name="knx-server" friendlyName="Hass OS KNXnet/IP Server" appData="@TMP@/appdata">
 	<!-- KNXnet/IP search & discovery -->
 	<discovery listenNetIf="all" outgoingNetIf="all" activate="true" />
 	<!-- Provides the KNXnet/IP-side configuration for access to one KNX subnet -->

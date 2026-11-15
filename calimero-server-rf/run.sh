@@ -5,6 +5,12 @@
 # Unterstuetzt alle Zugangswege (ft12-cemi, tpuart, usb) und Medien (tp1, rf, pl110).
 
 CONFIG_FILE="${CALIMERO_CONFIG_FILE:-/etc/server-config.xml}"
+# /opt/calimero/patch vor den Jars: gepatchte Calimero-Klassen (siehe patches/) haben Vorrang
+CALIMERO_CLASSPATH="/opt/calimero/patch:/opt/calimero/*"
+# Calimero speichert den Zustand seines Interface Object Servers (appData/<name>-ios.xml).
+# Bei jedem Start frisch beginnen, damit nur die aktuelle Add-on-Konfiguration gilt.
+CALIMERO_APPDATA="${CALIMERO_APPDATA:-/tmp/calimero}"
+rm -rf "$CALIMERO_APPDATA" && mkdir -p "$CALIMERO_APPDATA"
 
 # --- Hilfsfunktionen ---------------------------------------------------------
 
@@ -33,6 +39,19 @@ xml_escape() {
 # Prueft eine KNX-Einzeladresse (Bereich 0-15, Linie 0-15, Teilnehmer 0-255).
 is_individual_address() {
     [[ "$1" =~ ^([0-9]|1[0-5])\.([0-9]|1[0-5])\.([0-9]{1,3})$ ]] && [ "${BASH_REMATCH[3]}" -le 255 ]
+}
+
+# Prueft eine KNX-Gruppenadresse: 3-stufig (0-31/0-7/0-255), 2-stufig (0-31/0-2047) oder frei (0-65535).
+is_group_address() {
+    if [[ "$1" =~ ^([0-9]{1,2})/([0-9])/([0-9]{1,3})$ ]]; then
+        [ "${BASH_REMATCH[1]}" -le 31 ] && [ "${BASH_REMATCH[2]}" -le 7 ] && [ "${BASH_REMATCH[3]}" -le 255 ]
+    elif [[ "$1" =~ ^([0-9]{1,2})/([0-9]{1,4})$ ]]; then
+        [ "${BASH_REMATCH[1]}" -le 31 ] && [ "${BASH_REMATCH[2]}" -le 2047 ]
+    elif [[ "$1" =~ ^[0-9]{1,5}$ ]]; then
+        [ "$1" -le 65535 ]
+    else
+        return 1
+    fi
 }
 
 # --- Optionen einlesen -------------------------------------------------------
@@ -90,7 +109,7 @@ run_usb_probe() {
         printf '%b\n' "$CALIMERO_PROBE_OUTPUT"
         return
     fi
-    timeout 30 /opt/jdk/bin/java -cp "/opt/calimero/*:/opt/calimero/probe" KnxUsbProbe "$1" 2>/dev/null || true
+    timeout 30 /opt/jdk/bin/java -cp "${CALIMERO_CLASSPATH}:/opt/calimero/probe" KnxUsbProbe "$1" 2>/dev/null || true
 }
 
 probe_value() {
@@ -230,6 +249,12 @@ else
     bashio::log.warning "Keine Default-Route gefunden – Calimero verwendet das Standard-Netzwerkinterface des Hosts."
 fi
 
+for option in expose_date expose_time expose_datetime; do
+    if bashio::config.exists "$option" && ! is_group_address "$(bashio::config "$option")"; then
+        bashio::exit.nok "${option} '$(bashio::config "$option")' ist keine gueltige KNX-Gruppenadresse (z. B. 0/0/1)."
+    fi
+done
+
 ADD_TIMESERVER_EXPIRATION=""
 if bashio::config.exists 'timeserver_expiration'; then
     ADD_TIMESERVER_EXPIRATION="
@@ -240,7 +265,7 @@ fi
 
 CONFIG_XML="<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <!-- Calimero server settings (required for startup) -->
-<knxServer name=\"knx-server\" friendlyName=\"Hass OS KNXnet/IP Server\">
+<knxServer name=\"knx-server\" friendlyName=\"Hass OS KNXnet/IP Server\" appData=\"${CALIMERO_APPDATA}\">
 	<!-- KNXnet/IP search & discovery -->
 	<discovery listenNetIf=\"all\" outgoingNetIf=\"all\" activate=\"true\" />
 	<!-- Provides the KNXnet/IP-side configuration for access to one KNX subnet -->
@@ -249,7 +274,7 @@ CONFIG_XML="<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 		<knxAddress type=\"individual\">$KNX_ADDRESS</knxAddress>"
 if [ "$INTERFACE_TYPE" = "ft12-cemi" ]; then
 CONFIG_XML="$CONFIG_XML
-		<knxSubnet type=\"ft12-cemi\" medium=\"tp1\"$ADD_KNX_SOURCE_OVERRIDE>$(xml_escape "$SERIAL_DEVICE")</knxSubnet>"
+		<knxSubnet type=\"ft12\" medium=\"tp1\" format=\"cemi\"$ADD_KNX_SOURCE_OVERRIDE>$(xml_escape "$SERIAL_DEVICE")</knxSubnet>"
 fi
 if [ "$INTERFACE_TYPE" = "tpuart" ]; then
 CONFIG_XML="$CONFIG_XML
@@ -319,8 +344,8 @@ if [ -n "$SERIAL_DEVICE" ]; then
 fi
 
 if [ -n "${CALIMERO_DRY_RUN:-}" ]; then
-    echo "DRY RUN: /opt/jdk/bin/java -XX:+UseShenandoahGC -cp /opt/calimero/* ${JAVA_OPTS[*]} tuwien.auto.calimero.server.Launcher --no-stdin ${CONFIG_FILE}"
+    echo "DRY RUN: /opt/jdk/bin/java -XX:+UseShenandoahGC -cp ${CALIMERO_CLASSPATH} ${JAVA_OPTS[*]} tuwien.auto.calimero.server.Launcher --no-stdin ${CONFIG_FILE}"
     exit 0
 fi
 
-exec /opt/jdk/bin/java -XX:+UseShenandoahGC -cp "/opt/calimero/*" "${JAVA_OPTS[@]}" tuwien.auto.calimero.server.Launcher --no-stdin "$CONFIG_FILE"
+exec /opt/jdk/bin/java -XX:+UseShenandoahGC -cp "${CALIMERO_CLASSPATH}" "${JAVA_OPTS[@]}" tuwien.auto.calimero.server.Launcher --no-stdin "$CONFIG_FILE"

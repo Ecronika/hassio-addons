@@ -2,7 +2,7 @@
 
 A KNXnet/IP server (https://github.com/calimero-project/calimero-server) for running your own KNXnet/IP server in software. This add-on can be used for accessing the KNX bus via FT1.2/TPUART serial adapters or USB KNX devices. 
 
-The add-on uses Java 17 (java.base, java.xml); a custom Java runtime is created via jlink. Supported media: TP1, KNX RF and PL110 (USB). nrjavaserial+usb4java needs to be compiled for Alpine with musl, the release jar is updated with this binary.
+The add-on uses Calimero 2.6 with a Java 21 runtime (java.base, java.xml) created via jlink. Supported media: TP1, KNX RF and PL110 (USB). nrjavaserial+usb4java needs to be compiled for Alpine with musl, the release jar is updated with this binary.
 
 ## Add-On Configuration
 
@@ -54,7 +54,7 @@ The network interface for KNXnet/IP is detected automatically from the default r
 
 `loglevel` is optional and can be one of the slf4j log levels. It logs everything to standard output. 
 
-`expose_date` Cyclically transmit date (11.001) to this group address using the default time zone
+`expose_date` Cyclically transmit date (11.001) to this group address (e.g. `0/0/1`, also 2-level or free format) using the default time zone
 
 `expose_time` Cyclically transmit time (10.001) to this group address using the default time zone
 

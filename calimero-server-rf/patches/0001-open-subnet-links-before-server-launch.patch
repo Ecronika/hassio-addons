@@ -1,0 +1,24 @@
+--- a/tuwien/auto/calimero/server/gateway/KnxServerGateway.java
++++ b/tuwien/auto/calimero/server/gateway/KnxServerGateway.java
+@@ -726,8 +726,10 @@
+ 	@Override
+ 	public void run()
+ 	{
+-		launchServer();
+-
++		// calimero-server-rf: open the subnet links before launching the server endpoints.
++		// Otherwise a client connecting in between triggers a second openNetworkLink() for the
++		// same subnet, which fails for USB interfaces ("interface is already claimed") and keeps
++		// retrying. Links that cannot be opened initially reconnect in the background.
+ 		for (final var connector : connectors) {
+ 			if (connector.getServiceContainer().isActivated())
+ 				try {
+@@ -749,6 +751,8 @@
+ 				}
+ 		}
+ 
++		launchServer();
++
+ 		trucking = true;
+ 		final var dispatcherThread = Executor.execute(dispatcher, name + " subnet dispatcher");
+ 		while (trucking) {

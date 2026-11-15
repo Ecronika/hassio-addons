@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.19-rf (in development)
+
+### Changed
+- Calimero 2.5.1 → **2.6** (`calimero-usb` 2.6, SLF4J 2.0.17), Java runtime 21 (jlink, `java.base` + `java.xml`).
+- `commons-lang3` 3.8.1 → 3.21.0 (CVE-2025-48924).
+- All downloaded libraries are verified by SHA-256 (`dependencies.sha256`); nrjavaserial and libusb4java sources are verified by Git commit.
+- Base image pinned to `aarch64-base:3.24-2026.10.0` instead of `latest`.
+- FT1.2 cEMI is configured as `type="ft12" format="cemi"` (Calimero 2.6 no longer accepts `ft12-cemi`; the option value `ft12-cemi` is unchanged).
+- Calimero starts with a fresh interface object server state on every start (`appData` in `/tmp`).
+
+### Fixed
+- Startup race: if a client (e.g. Home Assistant) connected while Calimero was still opening the USB interface, a second link was opened (`An interface is already claimed`, endless retries). The subnet link is now opened before the server endpoints start (`patches/0001`).
+- Time server group addresses (`expose_*`) are validated; invalid values stopped Calimero at startup.
+
+### Tests
+- GitHub Actions: shellcheck, hadolint, regression tests, Calimero config acceptance test, race test, KnxUsbProbe, aarch64 image build.
+
 ## 0.18-rf
 
 ### Fixed

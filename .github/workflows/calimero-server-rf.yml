@@ -1,0 +1,96 @@
+name: calimero-server-rf
+
+on:
+  push:
+    paths:
+      - "calimero-server-rf/**"
+      - ".github/workflows/calimero-server-rf.yml"
+  pull_request:
+    paths:
+      - "calimero-server-rf/**"
+      - ".github/workflows/calimero-server-rf.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: calimero-server-rf
+
+jobs:
+  tests:
+    name: Lint & Tests
+    # Bash >= 5.2 (patsub_replacement), damit Fehler wie bei xml_escape auffallen
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shellcheck
+        run: shellcheck -s bash run.sh tests/*.sh
+
+      - name: hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: calimero-server-rf/Dockerfile
+
+      - name: Bash-Version
+        run: bash --version | head -1
+
+      - name: Regressionstests run.sh (Golden Files)
+        run: bash tests/run_tests.sh
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Abhängigkeiten laden (SHA-256 geprüft)
+        run: |
+          bash tests/fetch_dependencies.sh "$RUNNER_TEMP/jars"
+          # usb4java-Native für den x86-64-Runner (im Image wird die aarch64-Variante selbst gebaut)
+          curl -fsSL --retry 5 -o "$RUNNER_TEMP/jars/libusb4java-1.3.0-linux-x86-64.jar" \
+            https://repo1.maven.org/maven2/org/usb4java/libusb4java/1.3.0/libusb4java-1.3.0-linux-x86-64.jar
+          echo "e72d9c5cc0cbae2e0198db1179b967ff14773a1f21effe382ed1fdc1ef4ff524  $RUNNER_TEMP/jars/libusb4java-1.3.0-linux-x86-64.jar" | sha256sum -c -
+
+      - name: Calimero-Patches anwenden und kompilieren
+        run: |
+          mkdir -p "$RUNNER_TEMP/src" "$RUNNER_TEMP/patch"
+          cd "$RUNNER_TEMP/src"
+          unzip -q "$RUNNER_TEMP"/jars/sources/calimero-server-*-sources.jar 'tuwien/auto/calimero/server/gateway/KnxServerGateway.java'
+          for p in "$GITHUB_WORKSPACE"/calimero-server-rf/patches/*.patch; do patch -p1 < "$p"; done
+          javac --release 17 -nowarn -cp "$RUNNER_TEMP/jars/*" -d "$RUNNER_TEMP/patch" \
+            tuwien/auto/calimero/server/gateway/KnxServerGateway.java
+
+      - name: KnxUsbProbe kompilieren und ausführen (ohne Hardware)
+        run: |
+          javac --release 17 -Xlint:all -nowarn -cp "$RUNNER_TEMP/jars/*" -d "$RUNNER_TEMP/probe" probe/KnxUsbProbe.java
+          out=$(java -cp "$RUNNER_TEMP/jars/*:$RUNNER_TEMP/probe" KnxUsbProbe 2>/dev/null)
+          echo "$out"
+          grep -qE '^status=no_device$' <<< "$out"
+
+      - name: Calimero akzeptiert alle generierten Konfigurationen
+        run: bash tests/calimero_config_test.sh "$RUNNER_TEMP/jars" "$RUNNER_TEMP/patch"
+
+      - name: Startreihenfolge-Patch (Race-Test)
+        run: bash tests/race_test.sh "$RUNNER_TEMP/jars" "$RUNNER_TEMP/patch"
+
+  build:
+    name: Image-Build aarch64
+    needs: tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build
+        run: docker buildx build --platform linux/arm64 --load -t calimero-server-rf:ci .
+      - name: Image-Inhalt prüfen
+        run: |
+          docker run --rm --platform linux/arm64 --entrypoint /bin/sh calimero-server-rf:ci -c '
+            set -e
+            ls /opt/calimero/patch/tuwien/auto/calimero/server/gateway/KnxServerGateway.class
+            ls /opt/calimero/probe/KnxUsbProbe.class
+            ls /opt/calimero/libusb4java-1.3.0-linux-aarch64.jar /opt/calimero/nrjavaserial-5.2.1.jar
+            /opt/jdk/bin/java -version
+            /opt/jdk/bin/java -cp "/opt/calimero/*:/opt/calimero/probe" KnxUsbProbe 2>/dev/null'

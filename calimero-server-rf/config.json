@@ -1,6 +1,6 @@
 {
   "name": "Calimero KNXnet/IP Server (RF)",
-  "version": "0.18-rf",
+  "version": "0.19-rf.1",
   "slug": "calimero_server_rf",
   "description": "KNXnet/IP server in software accessing KNX via FT1.2, TPUART or USB interfaces (media TP1, RF, PL110)",
   "arch": ["aarch64"],
@@ -25,15 +25,15 @@
     "client_address_count": "int(0,255)",
     "interface_type": "list(auto|ft12-cemi|tpuart|usb)",
 	"serial_device": "device(subsystem=tty)?",
-	"usb_device": "str?",
+	"usb_device": "match(^[0-9A-Za-z][0-9A-Za-z ._:+-]*$)?",
 	"usb_medium": "list(tp1|rf|pl110)?",
 	"rf_domain_address": "match(^[0-9A-Fa-f]{2}([:. -]?[0-9A-Fa-f]{2}){1,5}$)?",
 	"routing": "bool",
     "knx_source_override": "bool?",
     "loglevel": "list(trace|debug|info|warn|error|off)?",
-    "expose_date": "str?",
-    "expose_time": "str?",
-    "expose_datetime": "str?",
+    "expose_date": "match(^(([0-9]|[12][0-9]|3[01])/[0-7]/([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|([0-9]|[12][0-9]|3[01])/([0-9]|[1-9][0-9]{1,2}|1[0-9]{3}|20[0-3][0-9]|204[0-7])|[0-9]{1,5})$)?",
+    "expose_time": "match(^(([0-9]|[12][0-9]|3[01])/[0-7]/([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|([0-9]|[12][0-9]|3[01])/([0-9]|[1-9][0-9]{1,2}|1[0-9]{3}|20[0-3][0-9]|204[0-7])|[0-9]{1,5})$)?",
+    "expose_datetime": "match(^(([0-9]|[12][0-9]|3[01])/[0-7]/([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])|([0-9]|[12][0-9]|3[01])/([0-9]|[1-9][0-9]{1,2}|1[0-9]{3}|20[0-3][0-9]|204[0-7])|[0-9]{1,5})$)?",
     "timeserver_expiration": "int?"
   }
 }

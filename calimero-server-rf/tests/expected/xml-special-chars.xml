@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Calimero server settings (required for startup) -->
-<knxServer name="knx-server" friendlyName="Hass OS KNXnet/IP Server">
+<knxServer name="knx-server" friendlyName="Hass OS KNXnet/IP Server" appData="@TMP@/appdata">
 	<!-- KNXnet/IP search & discovery -->
 	<discovery listenNetIf="all" outgoingNetIf="all" activate="true" />
 	<!-- Provides the KNXnet/IP-side configuration for access to one KNX subnet -->
@@ -17,7 +17,7 @@
 		</additionalAddresses>
 		<timeServer>
 			<datapoint stateBased="true" name="current time" dptID="10.001" priority="low">
-				<knxAddress type="group">1/2/3&amp;&lt;&gt;&quot;</knxAddress>
+				<knxAddress type="group">1/2/3</knxAddress>
 			</datapoint>
 		</timeServer>
 	</serviceContainer>

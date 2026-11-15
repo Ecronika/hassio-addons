@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Calimero server settings (required for startup) -->
-<knxServer name="knx-server" friendlyName="Hass OS KNXnet/IP Server">
+<knxServer name="knx-server" friendlyName="Hass OS KNXnet/IP Server" appData="@TMP@/appdata">
 	<!-- KNXnet/IP search & discovery -->
 	<discovery listenNetIf="all" outgoingNetIf="all" activate="true" />
 	<!-- Provides the KNXnet/IP-side configuration for access to one KNX subnet -->
 	<serviceContainer activate="true" routing="false" networkMonitoring="true"
 		udpPort="3671" listenNetIf="end0">
 		<knxAddress type="individual">1.1.0</knxAddress>
-		<knxSubnet type="ft12-cemi" medium="tp1">/dev/ttyAMA0</knxSubnet>
+		<knxSubnet type="ft12" medium="tp1" format="cemi">/dev/ttyAMA0</knxSubnet>
 		<!-- KNX group address filter applied by the server for this service container (optional) -->
 		<groupAddressFilter>
 		</groupAddressFilter>

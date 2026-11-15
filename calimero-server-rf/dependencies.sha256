@@ -1,0 +1,14 @@
+c5da5aa501bd5a0f6896408f5fd9a24e733d626482472867828b92c92051fcad  https://repo1.maven.org/maven2/com/github/calimero/calimero-core/2.6/calimero-core-2.6.jar
+786a2020300a012d198dae0ab1962fed7ea33eef209070fd0f497d169e033d60  https://repo1.maven.org/maven2/com/github/calimero/calimero-device/2.6/calimero-device-2.6.jar
+430eb6184f215d4c4cd7d37a38125fd292d9d45b43c79e024af0954fb6d1561d  https://repo1.maven.org/maven2/com/github/calimero/calimero-server/2.6/calimero-server-2.6.jar
+b5a3c986f575261428392d5a229a4d6e98b36a280b8443baf2225d93f6594c53  https://repo1.maven.org/maven2/com/github/calimero/calimero-server/2.6/calimero-server-2.6-sources.jar
+d1517b507767aa85b481f9c3334c7689e3e4edf70eb79988fbbc6a9ea7ad9a59  https://repo1.maven.org/maven2/com/github/calimero/calimero-rxtx/2.6/calimero-rxtx-2.6.jar
+0f9569c79e973c9d437432608af6058c207be38823ba4ab969f5f6bd120f8797  https://repo1.maven.org/maven2/io/calimero/calimero-usb/2.6/calimero-usb-2.6.jar
+d5d9cd5c979be30a4a31a177a3b0397126429414a52cdc44abf3809f2cec85c7  https://repo1.maven.org/maven2/org/usb4java/usb4java/1.3.0/usb4java-1.3.0.jar
+d041b7b4259a9ef6402c2d5dd1e1f443d5e685a6a0381eeed3c8da07c11a2ba4  https://repo1.maven.org/maven2/org/usb4java/usb4java-javax/1.3.0/usb4java-javax-1.3.0.jar
+c51832bafb45028769f45503190a8312f41cb2c59638a207629239a293bdf1dc  https://repo1.maven.org/maven2/javax/usb/usb-api/1.0.2/usb-api-1.0.2.jar
+a2af247ec4db6eb8947e18e23e0433e4871a7c5d0a40e1f92e46ede54ae1defe  https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.21.0/commons-lang3-3.21.0.jar
+7b751d952061954d5abfed7181c1f645d336091b679891591d63329c622eb832  https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar
+ddfea59ac074c6d3e24ac2c38622d2d963895e17f70b38ed4bdae4d780be6964  https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/2.0.17/slf4j-simple-2.0.17.jar
+36f6a35b83ce2dd8d269c1c437ef3a7d05a0122f0f392886878ed74548401af8  https://repo1.maven.org/maven2/org/slf4j/slf4j-jdk-platform-logging/2.0.17/slf4j-jdk-platform-logging-2.0.17.jar
+f0a9f4a8f8721874e261a956fa8a4b5b22b6c87b30d0073d10b8a788b49ca5b1  https://github.com/NeuronRobotics/nrjavaserial/releases/download/5.2.1/nrjavaserial-5.2.1.jar

@@ -38,14 +38,14 @@ for options in "$HERE"/cases/*.json; do
     out="$tmp/server-config.xml"; log="$tmp/log.txt"
 
     (
-        export PATH="$WORK/bin:$PATH" CALIMERO_DRY_RUN=1 CALIMERO_CONFIG_FILE="$out"
+        export PATH="$WORK/bin:$PATH" CALIMERO_DRY_RUN=1 CALIMERO_CONFIG_FILE="$out" CALIMERO_APPDATA="$tmp/appdata"
         export OPTIONS_FILE="$options" BASHIO_LIB RUN_SH
         unset MOCK_IP_ROUTE CALIMERO_SERIAL_CANDIDATES TOUCH
         # USB-Probe-Mock (Default: kein USB-Zugriff im Test). Format: key=value-Zeilen mit \n
         CALIMERO_PROBE_OUTPUT='status=error\nerror=kein USB im Test'
         if [ -f "$HERE/cases/$name.env" ]; then
             # shellcheck disable=SC1090
-            source <(sed "s#@TMP@#$tmp#g" "$HERE/cases/$name.env")
+            source <(tr -d '\r' < "$HERE/cases/$name.env" | sed "s#@TMP@#$tmp#g")
         fi
         export CALIMERO_PROBE_OUTPUT
         if [ -f "$HERE/cases/$name.env" ]; then
@@ -62,7 +62,7 @@ for options in "$HERE"/cases/*.json; do
     rc=$?
 
     if [ -f "$HERE/expected/$name.err" ] || [[ "$name" == err-* ]]; then
-        expected_text=$(cat "$HERE/expected/$name.err" 2>/dev/null)
+        expected_text=$(tr -d '\r' < "$HERE/expected/$name.err" 2>/dev/null)
         if [ "$UPDATE" = 1 ]; then
             grep -m1 'FATAL' "$log" | sed 's/.*FATAL: //; s/\x1b\[[0-9;]*m//g' > "$HERE/expected/$name.err"
             echo "UPDATE $name"; continue
@@ -86,7 +86,7 @@ for options in "$HERE"/cases/*.json; do
     if [ "$UPDATE" = 1 ]; then
         cp "$out" "$HERE/expected/$name.xml"; echo "UPDATE $name"; continue
     fi
-    if diff -u "$HERE/expected/$name.xml" "$out" > "$tmp/diff.txt"; then
+    if diff -u --strip-trailing-cr "$HERE/expected/$name.xml" "$out" > "$tmp/diff.txt"; then
         echo "PASS  $name"; pass=$((pass + 1))
     else
         echo "FAIL  $name"; sed 's/^/      /' "$tmp/diff.txt"; fail=$((fail + 1))
